@@ -1,5 +1,5 @@
 import time
-import bs4
+from bs4 import BeautifulSoup
 import paho.mqtt.client as paho
 
 broker = "192.168.1.33"
@@ -19,11 +19,10 @@ def makeAnnouncement(message):
     print("Connecting to Broker: ", broker)
     client.connect(broker)
     print("Publishing")
-    client.loop_start()
-    
-    client.publish("Announcement", message)
-    
-    client.loop_stop()
+
+    client.publish("Sign", "1")
+    time.sleep(1)
+    client.publish("Sign/Announcement", message)
 
 def makeEvent(date, time, eventName, message):
 
@@ -33,26 +32,23 @@ def makeEvent(date, time, eventName, message):
     print("Connecting to Broker: ", broker)
     client.connect(broker)
     print("Publishing")
-    client.loop_start()
     
-    client.publish("Event", message)
-    client.publish("Date", date)
-    client.publish("Name", eventName)
-    client.publish("Time", time)
-    
-    client.loop_stop()
+    client.publish("Sign", "3")
+    client.publish("Sign/Event/Name", eventName)
+    client.publish("Sign/Event/Date", date)
+    client.publish("Sign/Event/Time", time)
+    client.publish("Sign/Event", message)
 
 
-def makeGreeting(Name):
+def makeGreeting(name):
     client = paho.Client("Sign_Publisher")
     client.on_connect = onConnect
     
     print("Connecting to Broker: ", broker)
     client.connect(broker)
     print("Publishing")
-    client.loop_start()
-    
-    client.publish("Name", name)
-    
-    client.loop_stop()
+
+    client.publish("Sign", "2")
+    time.sleep(1)
+    client.publish("Sign/Greeting", name)
     
