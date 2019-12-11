@@ -184,7 +184,7 @@ def processRequest(s, addr):
                 signList.write(lineWrite)
 
                 inputData += "&"
-                inputData += currentNum
+                inputData += str(currentNum)
                 makeSign(inputData)
 
                 signList.close()
