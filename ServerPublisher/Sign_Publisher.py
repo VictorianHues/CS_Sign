@@ -21,3 +21,14 @@ def makeSign(message):
 
     time.sleep(1)
     client.publish("Sign/Any", message)
+
+def deleteSign(message):
+    client = paho.Client("Sign_Publisher")
+    client.on_connect = onConnect
+    
+    print("Connecting to Broker: ", broker)
+    client.connect(broker)
+    print("Publishing")
+
+    time.sleep(1)
+    client.publish("Sign/Delete", message)

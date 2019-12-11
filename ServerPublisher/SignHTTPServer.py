@@ -132,6 +132,8 @@ def processRequest(s, addr):
                 response += inFile.read()
                 s.send(response.encode("ascii"))
 
+                deleteSign(inputData)
+
                 signList.close()
                 
             ############If a Form Page is Recieved#################
@@ -180,6 +182,9 @@ def processRequest(s, addr):
 
                 lineWrite += '\n'
                 signList.write(lineWrite)
+
+                inputData += "&"
+                inputData += currentNum
                 makeSign(inputData)
 
                 signList.close()

@@ -1,3 +1,4 @@
+import os
 import time
 from bs4 import BeautifulSoup
 import paho.mqtt.client as paho
@@ -11,7 +12,7 @@ current = ""
 currentType = ""
 
 def onMessage(client, userdata, message):
-    print("STAART TEST")
+    print("START TEST")
     time.sleep(1)
     msg = str(message.payload.decode("utf-8"))
     print("recieved message:", msg)
@@ -21,6 +22,39 @@ def onMessage(client, userdata, message):
     current = str(currentSign) + ".html"
     currentType = msg
     print(current)
+
+def onMessageDelete(client, userdata, message):
+    time.sleep(1)
+    msg = str(message.payload.decode("utf-8"))
+    print("recieved message:", msg)
+
+    formList = []
+    current = ""
+    for i in range(len(msg)):
+        if msg[i-1] == "=":
+            current = ""
+        if msg[i] == "&":
+            formList.append(current)
+            print(current)
+            current = ""
+        elif msg[i] == "+":
+            current += " "
+        else:
+            current += msg[i]
+    formList.append(current)
+
+    formDelete = formList[1]
+    print("DELETE")
+
+    dir_path = os.path.dirname(os.path.realpath(__file__))
+    for root, dirs, files in os.walk(dir_path): 
+    for file in files:  
+        if file.startswith(str(formDelete)): 
+            os.remove(file)
+        
+    
+
+
 
 def onMessageAny(client, userdata, message):
     time.sleep(1)
@@ -46,15 +80,20 @@ def onMessageAny(client, userdata, message):
     if formList[0] == "event":
         print("EVENT")
         template = "Event.html"
-        output = "Event1.html"
+        output = formList[5]
+        output += ".html"
     elif formList[0] == "announce":
         print("ANNOUNCEMENT")
         template = "Announce.html"
         output = "Announce1.html"
+        output = formList[2]
+        output += ".html"
     elif formList[0] == "greet":
         print("GREETING")
         template = "Greet.html"
         output = "Greet1.html"
+        output = formList[2]
+        output += ".html"
 
 
     html = open(template).read()
@@ -94,6 +133,7 @@ def signConnect():
     print("Subscribing")
 
     client.message_callback_add("Sign/Any", onMessageAny)
+    client.message_callback_add("Sign/Delete", onMessageDelete)
 
     client.loop_start()
 
