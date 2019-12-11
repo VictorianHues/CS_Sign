@@ -9,7 +9,6 @@ import threading
 import time
 import random
 
-signList = {}
 
 def processRequest(s, addr):
 
@@ -78,104 +77,112 @@ def processRequest(s, addr):
                     formList.append(current)
                     print(current)
                     current = ""
-                    #response += "\n"
                 else:
                     current += inputData[i]
-                    #response += inputData[i]
             formList.append(current)
 
+
+            ##############If a signage request is recieved################
             if formList[0] == "signage":
                 html = open("SignageTemplate.html").read()
-                soup = BeautifulSoup(html)
+                signList = open("SignList.txt", "r+")
+                soup = BeautifulSoup(html, "html.parser")
                     
 
-                newLine = []
-                newLine = soup.new_tag('br')
+                lineRead = signList.readlines()
+                for line in lineRead: # Read each line
+                    newLine = []
+                    newLine = soup.new_tag('br')
 
-                soup.body.append(newLine)
-                for i in range(len(formList)):
-                    newLine[i] = soup.new_tag('br')
-                    newLine[i].string = formList[i]
-                    soup.body.append(newLine[i])
+                    soup.body.append(newLine)
+                    soup.body.append(line)
 
                 open("Signage.html", "w").write(str(soup))
 
                 inFile = open(resource, "r")
                 response += inFile.read()
                 s.send(response.encode("ascii"))
+                signList.close()
 
+            ####################Delete a Specific Sign#######################
+            elif formList[0] == "delete":
+                html = open("SubTemplate.html").read()
+                signList = open("SignList.txt", "r")
+                soup = BeautifulSoup(html, "html.parser")
 
+                deleteNum = int(formList[1])
+                lineRead = signList.readlines()
+                signList.close()
+                
+                signList = open("SignList.txt", "w")
+                for line in lineRead:
+                    lineList = line.split(" ", 1)
+                    signNum = int(lineList[0])
+                    if signNum != deleteNum:
+                        signList.write(line)
+                    else:
+                        newLine = []
+                        newLine = soup.new_tag('br')
+                        soup.body.append(newLine)
+                        soup.body.append(line)
+                signList.close()
 
+                open("Sub.html", "w").write(str(soup))
+                inFile = open(resource, "r")
+                response += inFile.read()
+                s.send(response.encode("ascii"))
+
+                signList.close()
+                
+            ############If a Form Page is Recieved#################
             else:
                 #######Return page with data to user########
                 html = open("AddedTemplate.html").read()
-                soup = BeautifulSoup(html)
+                signList = open("SignList.txt", "r+")
+                soup = BeautifulSoup(html, "html.parser")
                     
+                lineWrite = ""
 
+                lineRead = signList.readlines()
+                currentNum = 1
+                locFound = 0;
+
+                for line in lineRead: # Read each line
+                    lineList = line.split(" ", 1)
+                    signNum = int(lineList[0])
+                    if locFound == 0:
+                        if currentNum != signNum:
+                            locFound = 1;
+                        else:
+                            currentNum = currentNum + 1
+                lineWrite += str(currentNum)
+                lineWrite += ' '
+                signList.close()
+
+                
+                signList = open("SignList.txt", "a+")
                 newLine = []
                 newLine = soup.new_tag('br')
-
+                
                 soup.body.append(newLine)
                 for i in range(len(formList)):
                     newLine[i] = soup.new_tag('br')
                     newLine[i].string = formList[i]
                     soup.body.append(newLine[i])
+                    lineWrite += formList[i]
+                    lineWrite += ' '
 
                 open("Added.html", "w").write(str(soup))
 
                 inFile = open(resource, "r")
                 response += inFile.read()
                 s.send(response.encode("ascii"))
-                
 
+                lineWrite += '\n'
+                signList.write(lineWrite)
                 makeSign(inputData)
 
-                #key = 0
-                #while signList[key] != null:
-                #    key+=1
-                #signList[key] = formList
-
-#################################################################
-        elif resource[-3:].lower() == "php":
-            dataLoc = HTTPmsg.split("\n")
-            inputData = dataLoc[-1]
-            response = "HTTP/1.0 200 OK\n"
-            response += "Content-Type: text/php\n"
-            response +="\n"
-
-            ##f = open("Input.txt", "a")
-
-
-            formList = []
-            current = ""
-            for i in range(len(inputData)):
-                if inputData[i-1] == "=":
-                    current = ""
-                if inputData[i] == "&":
-                    formList.append(current)
-                    print(current)
-                    current = ""
-##                    f.write("\n")
-                    response += "\n"
-                else:
-##                    f.write(inputData[i])
-                    current += inputData[i]
-                    response += inputData[i]
-
-            s.send(response.encode("ascii"))
-
-            makeSign(inputData)
-
-            key = 0
-            while signList[key]:
-                key+=1
-            signList[key] = formList
-                
-##            if formList[0] == "event":
-##                makeEvent(formList[2], formList[3], formList[1], "Test")
-##            f.write ("\n")
-##            f.close()
-                
+                signList.close()
 
         elif resource[-3:].lower() == "jpg":
             response = "HTTP/1.0 200 OK\n"
