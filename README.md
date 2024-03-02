@@ -1,4 +1,4 @@
-# Assignment was imported from student repository https://github.com/Julieon1/MonopolyGame after losing access to email verification
+# Assignment was imported from student repository https://github.com/Julieon1/CS_Sign after losing access to email verification
 
 
 Development for a local network “sign board” system for use in public announcement distribution and standardization of displayed information.
